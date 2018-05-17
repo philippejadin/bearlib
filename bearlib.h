@@ -102,11 +102,11 @@ byte bear_get_locale()
 }
 
 
-byte bear_set_locale(locale)
+byte bear_set_locale(int locale)
 {
   // on prépare des variables qui vont recevoir toutes les infos, dont un tableau, data, qui recevra les données du block sélectionné
 
-  byte data[72];
+  byte data[18];
   byte block = 4; // numéro du block, que l'on interroge, ici la locale
   byte len = sizeof(data);
 
@@ -117,20 +117,25 @@ byte bear_set_locale(locale)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
+    // Cloturer au plus vite la lecture de la carte
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
+    return false;
   }
 
 
   // écriture locale
-  status = mfrc522.MIFARE_Write(block, data,  &len);
+  status = mfrc522.MIFARE_Write(block, data,  16);
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("MIFARE_Write() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
+    // Cloturer au plus vite la lecture de la carte
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
     return false;
   }
 
-  // Cloturer au plus vite la lecture de la carte
-  mfrc522.PICC_HaltA();
-  mfrc522.PCD_StopCrypto1();
+
 
   return true;
 }
@@ -199,7 +204,7 @@ Attends un point d'exclamation de la raspberry pour signaler que la lecture du f
 Renvoi true si la vidéo est terminée, false si elle joue toujours
 on peut définir un temps maximum (maxdelay) au delà duquel elle renvoi d'office false.
 */
-byte bear_is_playing(maxdelay)
+byte bear_is_playing(long maxdelay)
 {
 
   wdt_reset();
@@ -219,7 +224,7 @@ byte bear_is_playing(maxdelay)
   if (Serial.available() > 0)
   {
     // read the incoming byte:
-    incomingByte = Serial.read();
+    byte incomingByte = Serial.read();
     if (incomingByte == "!")
     {
       bear_playing_time = 0;
