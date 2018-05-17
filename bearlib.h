@@ -17,6 +17,10 @@ Valeurs :
 */
 
 
+#include <SPI.h>
+#include <MFRC522.h> // à installer
+#include <avr/wdt.h> // inclue dans arduino
+#include <FadeLed.h> // à installer
 
 #define RST_PIN         9           // pin reset du lecteur rfid
 #define SS_PIN          10          // pins slave select du lecteur rfid
@@ -48,6 +52,8 @@ void bear_init()
   // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
   // Cette clé est utilisée pour s'authentifier avec la carte mifare. Mais nous n'allons pas utiliser cette fonctionalité (ou plutôt : nous allons garder la clé d'origine pour ne pas compliqer)
   for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
+
+  wdt_enable(WDTO_8S); // active le watchdog pour rebooter l'arduino si pas de réponse après 8 secondes
 }
 
 
@@ -96,6 +102,8 @@ byte bear_get_locale()
 
 void bear_led_standby()
 {
+  FadeLed::update(); // gestion du fondu des leds, à appeller en boucle
+
   if (led.done())
   {
     if (led.get() == LED_LOW)
