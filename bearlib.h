@@ -35,6 +35,7 @@ int LED_LOW = 5; // led semi allumée
 int LED_MEDIUM = 20; // led medium power (100 = réel maximum)
 int LED_HIGH = 80; // led full power (100 = réel maximum)
 
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
 MFRC522::StatusCode status;
@@ -100,6 +101,40 @@ byte bear_get_locale()
   return data[0];
 }
 
+
+byte bear_set_locale(locale)
+{
+  // on prépare des variables qui vont recevoir toutes les infos, dont un tableau, data, qui recevra les données du block sélectionné
+
+  byte data[72];
+  byte block = 4; // numéro du block, que l'on interroge, ici la locale
+  byte len = sizeof(data);
+
+  data[0] = locale;
+
+  // on s'authentifie avec l'uid de la carte trouvé ci-dessus ainsi qu'avec la clé initialisée ci-dessus aussi
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Authentication failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+  }
+
+
+  // écriture locale
+  status = mfrc522.MIFARE_Write(block, data,  &len);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("MIFARE_Write() failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+  // Cloturer au plus vite la lecture de la carte
+  mfrc522.PICC_HaltA();
+  mfrc522.PCD_StopCrypto1();
+
+  return true;
+}
+
 void bear_led_standby()
 {
   FadeLed::update(); // gestion du fondu des leds, à appeller en boucle
@@ -135,7 +170,61 @@ void bear_led_blink()
   wdt_reset();
 }
 
-byte bear_set_locale()
+
+void bear_led_blink_error()
+{
+  wdt_reset();
+  analogWrite(LED_PIN, LED_LOW);
+  delay(50);
+  analogWrite(LED_PIN, LED_HIGH);
+  delay(50);
+  analogWrite(LED_PIN, LED_LOW);
+  delay(50);
+  analogWrite(LED_PIN, LED_HIGH);
+  delay(50);
+  analogWrite(LED_PIN, LED_LOW);
+  delay(50);
+  analogWrite(LED_PIN, LED_HIGH);
+  delay(50);
+  analogWrite(LED_PIN, LED_LOW);
+  wdt_reset();
+}
+
+
+
+unsigned long bear_playing_time = 0;
+
+/*
+Attends un point d'exclamation de la raspberry pour signaler que la lecture du fichier est terminée
+Renvoi true si la vidéo est terminée, false si elle joue toujours
+on peut définir un temps maximum (maxdelay) au delà duquel elle renvoi d'office false.
+*/
+byte bear_is_playing(maxdelay)
 {
 
+  wdt_reset();
+
+
+  if (bear_playing_time == 0)
+  {
+    bear_playing_time = millis();
+  }
+
+  if (millis() > (bear_playing_time + maxdelay))
+  {
+    bear_playing_time = 0;
+    return false;
+  }
+
+  if (Serial.available() > 0)
+  {
+    // read the incoming byte:
+    incomingByte = Serial.read();
+    if (incomingByte == "!")
+    {
+      bear_playing_time = 0;
+      return false;
+    }
+  }
+  return true;
 }
