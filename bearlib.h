@@ -26,6 +26,17 @@ Valeurs :
 #define SS_PIN          10          // pins slave select du lecteur rfid
 #define LED_PIN         3           // led on pin 3
 
+#define RELAY_1         4
+#define RELAY_2         5
+#define RELAY_3         6
+#define RELAY_4         7
+
+#define MOSFET_1        5
+#define MOSFET_2        6
+
+
+
+
 const byte LOCALE_FR = 0;
 const byte LOCALE_NL = 1;
 const byte LOCALE_EN = 2;
@@ -117,25 +128,23 @@ byte bear_set_locale(int locale)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    // Cloturer au plus vite la lecture de la carte
-    mfrc522.PICC_HaltA();
-    mfrc522.PCD_StopCrypto1();
+
     return false;
   }
 
 
   // écriture locale
-  status = mfrc522.MIFARE_Write(block, data,  16);
+  status = mfrc522.MIFARE_Write(block, &data[16],  16);
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("MIFARE_Write() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    // Cloturer au plus vite la lecture de la carte
-    mfrc522.PICC_HaltA();
-    mfrc522.PCD_StopCrypto1();
+
     return false;
   }
 
-
+  // Cloturer au plus vite la lecture de la carte
+  mfrc522.PICC_HaltA();
+  mfrc522.PCD_StopCrypto1();
 
   return true;
 }
@@ -195,6 +204,17 @@ void bear_led_blink_error()
   wdt_reset();
 }
 
+
+// fait un
+bear_delay(long delay)
+{
+  long start = millis();
+
+  while (millis() < (start + delay))
+  {
+    wdt_reset();
+  }
+}
 
 
 unsigned long bear_playing_time = 0;
