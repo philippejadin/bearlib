@@ -120,6 +120,7 @@ byte bear_set_locale(int locale)
   byte data[18];
   byte block = 4; // numéro du block, que l'on interroge, ici la locale
   byte len = sizeof(data);
+  boolean result = true;
 
   data[0] = locale;
 
@@ -129,7 +130,12 @@ byte bear_set_locale(int locale)
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
 
+    delay(100);
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
     return false;
+
+    result = false;
   }
 
 
@@ -139,14 +145,19 @@ byte bear_set_locale(int locale)
     Serial.print(F("MIFARE_Write() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
 
+    delay(100);
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
     return false;
+    
+    result = false;
   }
 
   // Cloturer au plus vite la lecture de la carte
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
 
-  return true;
+  return result;
 }
 
 void bear_led_standby()
