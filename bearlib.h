@@ -42,7 +42,7 @@ const byte LOCALE_NL = 1;
 const byte LOCALE_EN = 2;
 const byte LOCALE_DE = 3;
 
-int LED_LOW = 5; // led semi allumée
+int LED_LOW = 10; // led semi allumée
 int LED_MEDIUM = 20; // led medium power (100 = réel maximum)
 int LED_HIGH = 80; // led full power (100 = réel maximum)
 
@@ -64,8 +64,9 @@ void bear_init()
   // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
   // Cette clé est utilisée pour s'authentifier avec la carte mifare. Mais nous n'allons pas utiliser cette fonctionalité (ou plutôt : nous allons garder la clé d'origine pour ne pas compliqer)
   for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
-
   wdt_enable(WDTO_8S); // active le watchdog pour rebooter l'arduino si pas de réponse après 8 secondes
+
+  analogWrite(LED_PIN, LED_LOW);
 }
 
 
@@ -86,14 +87,12 @@ byte bear_get_locale()
   byte block = 4; // numéro du block, que l'on interroge, ici la locale
   byte len = sizeof(data);
 
-
   // on s'authentifie avec l'uid de la carte trouvé ci-dessus ainsi qu'avec la clé initialisée ci-dessus aussi
   status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
   }
-
 
 
   // là on lit les données
@@ -129,12 +128,6 @@ byte bear_set_locale(int locale)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-
-    delay(100);
-    mfrc522.PICC_HaltA();
-    mfrc522.PCD_StopCrypto1();
-    return false;
-
     result = false;
   }
 
@@ -144,12 +137,6 @@ byte bear_set_locale(int locale)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("MIFARE_Write() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-
-    delay(100);
-    mfrc522.PICC_HaltA();
-    mfrc522.PCD_StopCrypto1();
-    return false;
-    
     result = false;
   }
 
@@ -162,18 +149,22 @@ byte bear_set_locale(int locale)
 
 void bear_led_standby()
 {
-  FadeLed::update(); // gestion du fondu des leds, à appeller en boucle
+  //FadeLed::update(); // gestion du fondu des leds, à appeller en boucle
+  //led.set(LED_LOW);
+  analogWrite(LED_PIN, LED_LOW);
 
+  /*
   if (led.done())
   {
-    if (led.get() == LED_LOW)
-    {
-      led.set(LED_MEDIUM);
-    } else
-    {
-      led.set(LED_LOW);
-    }
-  }
+  if (led.get() == LED_LOW)
+  {
+  led.set(LED_MEDIUM);
+} else
+{
+led.set(LED_LOW);
+}
+}
+*/
 }
 
 void bear_led_blink()
