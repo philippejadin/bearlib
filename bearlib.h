@@ -77,94 +77,90 @@ boolean bear_has_card()
 }
 
 
+byte bear_read(byte block, byte position)
+{
+  byte buffer[18];
+  byte len = 18;
+
+  // auth
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 4, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Authentication failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return status;
+  }
+
+  //read buffer
+  status = mfrc522.MIFARE_Read(block, buffer, &len);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Reading failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return status;
+  }
+
+  return buffer[position];
+}
+
+
+byte bear_write(byte block, byte position, byte value)
+{
+  byte buffer[18];
+  byte len = 18;
+
+
+  // auth
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid));
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("PCD_Authenticate() failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return status;
+  }
+
+
+  // read initial block values
+  status = mfrc522.MIFARE_Read(block, buffer, &len);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Reading failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return status;
+  }
+
+  // alter buffer values
+  buffer[position] = value;
+
+  // Write block with new values
+  status = mfrc522.MIFARE_Write(block, buffer, 16);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("MIFARE_Write() failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return status;
+  }
+
+
+  return true;
+}
+
+bear_stop()
+{
+  mfrc522.PICC_HaltA();
+  mfrc522.PCD_StopCrypto1();
+}
 
 
 byte bear_get_locale()
 {
-  // on prépare des variables qui vont recevoir toutes les infos, dont un tableau, data, qui recevra les données du block sélectionné
-
-  byte data[72];
-  byte block = 4; // numéro du block, que l'on interroge, ici la locale
-  byte len = sizeof(data);
-
-  // on s'authentifie avec l'uid de la carte trouvé ci-dessus ainsi qu'avec la clé initialisée ci-dessus aussi
-  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Authentication failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-  }
-
-
-  // là on lit les données
-  len = sizeof(data);
-  status = mfrc522.MIFARE_Read(block, data, &len);
-
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Reading failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-  }
-
-  // Cloturer au plus vite la lecture de la carte
-  mfrc522.PICC_HaltA();
-  mfrc522.PCD_StopCrypto1();
-
-  return data[0];
+  return bear_read(4,0);
 }
 
 
 byte bear_set_locale(int locale)
 {
-  // on prépare des variables qui vont recevoir toutes les infos, dont un tableau, data, qui recevra les données du block sélectionné
-
-  byte data[18];
-  byte block = 4; // numéro du block, que l'on interroge, ici la locale
-  byte len = sizeof(data);
-  boolean result = true;
-
-  data[0] = locale;
-
-  // on s'authentifie avec l'uid de la carte trouvé ci-dessus ainsi qu'avec la clé initialisée ci-dessus aussi
-  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Authentication failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    result = false;
-  }
-
-
-  // écriture locale
-  status = mfrc522.MIFARE_Write(block, &data[16],  16);
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("MIFARE_Write() failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    result = false;
-  }
-
-  // Cloturer au plus vite la lecture de la carte
-  mfrc522.PICC_HaltA();
-  mfrc522.PCD_StopCrypto1();
-
-  return result;
+  return bear_write(4,0, locale);
 }
 
 void bear_led_standby()
 {
-  //FadeLed::update(); // gestion du fondu des leds, à appeller en boucle
-  //led.set(LED_LOW);
   analogWrite(LED_PIN, LED_LOW);
-
-  /*
-  if (led.done())
-  {
-  if (led.get() == LED_LOW)
-  {
-  led.set(LED_MEDIUM);
-} else
-{
-led.set(LED_LOW);
-}
-}
-*/
 }
 
 void bear_led_blink()
