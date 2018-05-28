@@ -37,10 +37,10 @@ Valeurs :
 
 
 
-const byte LOCALE_FR = 0;
-const byte LOCALE_NL = 1;
-const byte LOCALE_EN = 2;
-const byte LOCALE_DE = 3;
+const byte LOCALE_FR = 1;
+const byte LOCALE_NL = 2;
+const byte LOCALE_EN = 3;
+const byte LOCALE_DE = 4;
 
 int LED_LOW = 10; // led semi allumée
 int LED_MEDIUM = 20; // led medium power (100 = réel maximum)
@@ -87,7 +87,7 @@ byte bear_read(byte block, byte position)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return status;
+    return false;
   }
 
   //read buffer
@@ -95,7 +95,7 @@ byte bear_read(byte block, byte position)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Reading failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return status;
+    return false;
   }
 
   return buffer[position];
@@ -113,7 +113,7 @@ byte bear_write(byte block, byte position, byte value)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("PCD_Authenticate() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return status;
+    return false;
   }
 
 
@@ -122,7 +122,7 @@ byte bear_write(byte block, byte position, byte value)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Reading failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return status;
+    return false;
   }
 
   // alter buffer values
@@ -133,7 +133,7 @@ byte bear_write(byte block, byte position, byte value)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("MIFARE_Write() failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return status;
+    return false;
   }
 
 
