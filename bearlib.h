@@ -10,10 +10,10 @@ N'utiliser que ceux qui n'ont rien ci-dessus (ceux où tout est à 0)
 
 block 4 = locale
 Valeurs :
-0 = fr
-1 = nl
-2 = en
-3 = de
+1 = fr
+2 = nl
+3 = en
+4 = de
 */
 
 
