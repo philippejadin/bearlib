@@ -90,7 +90,7 @@ byte bear_read(byte block, byte position)
     return false;
   }
 
-  //read buffer
+  // read buffer
   status = mfrc522.MIFARE_Read(block, buffer, &len);
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Reading failed: "));
