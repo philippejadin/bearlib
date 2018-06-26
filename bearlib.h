@@ -193,7 +193,12 @@ bear_stop()
 
 byte bear_get_locale()
 {
-  return bear_read(4,0);
+  int locale = bear_read(4,0);
+  if (locale == 0) // send english if nothing found
+  {
+    return LOCALE_EN;
+  }
+  return locale;
 }
 
 
