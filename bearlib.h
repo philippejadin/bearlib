@@ -50,7 +50,7 @@ int LED_HIGH = 80; // led full power (100 = réel maximum)
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 MFRC522::MIFARE_Key key;
 MFRC522::StatusCode status;
-FadeLed led(LED_PIN); //Fading status LED on pin 3
+
 
 
 void bear_init()
@@ -59,7 +59,7 @@ void bear_init()
   SPI.begin();                                                  // Init SPI bus
   mfrc522.PCD_Init();                                              // Init MFRC522 card
   Serial.println(MODULE_NAME);    //affiche le nom du module en debug série
-  led.setTime(1000, true);
+
 
   // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
   // Cette clé est utilisée pour s'authentifier avec la carte mifare. Mais nous n'allons pas utiliser cette fonctionalité (ou plutôt : nous allons garder la clé d'origine pour ne pas compliqer)
