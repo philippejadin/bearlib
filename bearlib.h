@@ -23,7 +23,6 @@ block 5, position 0 =  nourriture
 #include <SPI.h>
 #include <MFRC522.h> // à installer
 #include <avr/wdt.h> // inclue dans arduino
-#include <FadeLed.h> // à installer
 
 #define RST_PIN         9           // pin reset du lecteur rfid
 #define SS_PIN          10          // pins slave select du lecteur rfid
