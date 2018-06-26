@@ -14,6 +14,9 @@ Valeurs :
 2 = nl
 3 = en
 4 = de
+
+block 5, position 0 =  nourriture
+
 */
 
 
@@ -140,6 +143,48 @@ byte bear_write(byte block, byte position, byte value)
   return true;
 }
 
+/*
+Erase a whole block on the bear_has_card
+*/
+byte bear_erase_block(byte block)
+{
+  byte buffer[18];
+  byte len = 18;
+
+
+  // auth
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, block, &key, &(mfrc522.uid));
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("PCD_Authenticate() failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+
+  // read initial block values
+  status = mfrc522.MIFARE_Read(block, buffer, &len);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Reading failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+  // alter buffer values, set everything to 0
+  for (byte i = 0; i < 17; i++) buffer[i] = 0;
+
+  // Write block with new values
+  status = mfrc522.MIFARE_Write(block, buffer, 16);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("MIFARE_Write() failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+
+  return true;
+}
+
+
 bear_stop()
 {
   mfrc522.PICC_HaltA();
@@ -156,6 +201,14 @@ byte bear_get_locale()
 byte bear_set_locale(int locale)
 {
   return bear_write(4,0, locale);
+}
+
+// TODO EFFACER LES DONNEES DE LA CARTE
+void  bear_erase()
+{
+  bear_erase_block(4); // efface la nourriture
+  bear_erase_block(5); // efface la nourriture
+  bear_erase_block(6); // efface les ressemblances
 }
 
 void bear_led_standby()
