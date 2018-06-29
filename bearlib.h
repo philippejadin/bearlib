@@ -104,6 +104,31 @@ byte bear_read(byte block, byte position)
 }
 
 
+byte bear_read_block(byte block, byte *buffer)
+{
+
+  byte len = 18;
+
+  // auth
+  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 4, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Authentication failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+  // read buffer
+  status = mfrc522.MIFARE_Read(block, buffer, &len);
+  if (status != MFRC522::STATUS_OK) {
+    Serial.print(F("Reading failed: "));
+    Serial.println(mfrc522.GetStatusCodeName(status));
+    return false;
+  }
+
+  return true;
+}
+
+
 byte bear_write(byte block, byte position, byte value)
 {
   byte buffer[18];
@@ -213,6 +238,7 @@ void  bear_erase()
   bear_erase_block(4); // efface la nourriture
   bear_erase_block(5); // efface la nourriture
   bear_erase_block(6); // efface les ressemblances
+
 }
 
 void bear_led_standby()
