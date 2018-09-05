@@ -219,10 +219,17 @@ bear_stop()
 byte bear_get_locale()
 {
   int locale = bear_read(4,0);
-  if (locale == 0) // send english if nothing found
+
+  if (locale > 4)
   {
     return LOCALE_EN;
   }
+
+  if (locale < 1) // send english if nothing found
+  {
+    return LOCALE_EN;
+  }
+  
   return locale;
 }
 
