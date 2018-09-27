@@ -220,12 +220,13 @@ byte bear_get_locale()
 {
   int locale = bear_read(4,0);
 
+  
   if (locale > 4)
   {
-    return false;
+    return LOCALE_EN;
   }
 
-  if (locale < 1) // send english if nothing found
+  if (locale < 1)
   {
     return false;
   }
@@ -242,7 +243,6 @@ byte bear_set_locale(int locale)
 // TODO EFFACER LES DONNEES DE LA CARTE
 void  bear_erase()
 {
-  bear_erase_block(4); // efface la nourriture
   bear_write(5, 0, 20); // efface la nourriture
   bear_erase_block(6); // efface les ressemblances
 
