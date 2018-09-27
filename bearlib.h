@@ -222,12 +222,12 @@ byte bear_get_locale()
 
   if (locale > 4)
   {
-    return LOCALE_EN;
+    return false;
   }
 
   if (locale < 1) // send english if nothing found
   {
-    return LOCALE_EN;
+    return false;
   }
   
   return locale;
@@ -243,7 +243,7 @@ byte bear_set_locale(int locale)
 void  bear_erase()
 {
   bear_erase_block(4); // efface la nourriture
-  bear_erase_block(5); // efface la nourriture
+  bear_write(5, 0, 20); // efface la nourriture
   bear_erase_block(6); // efface les ressemblances
 
 }
