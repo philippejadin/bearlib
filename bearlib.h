@@ -89,7 +89,7 @@ byte bear_read(byte block, byte position)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return false;
+    return -1;
   }
 
   // read buffer
@@ -97,7 +97,7 @@ byte bear_read(byte block, byte position)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Reading failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return false;
+    return -1;
   }
 
   return buffer[position];
@@ -114,7 +114,7 @@ byte bear_read_block(byte block, byte *buffer)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Authentication failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return false;
+    return -1;
   }
 
   // read buffer
@@ -122,7 +122,7 @@ byte bear_read_block(byte block, byte *buffer)
   if (status != MFRC522::STATUS_OK) {
     Serial.print(F("Reading failed: "));
     Serial.println(mfrc522.GetStatusCodeName(status));
-    return false;
+    return -1;
   }
 
   return true;
@@ -220,17 +220,25 @@ byte bear_get_locale()
 {
   int locale = bear_read(4,0);
 
-  
-  if (locale > 4)
+
+  if (locale == -1)
   {
-    return LOCALE_EN;
+    Serial.println("cannot read locale");
+    return false;
   }
 
   if (locale < 1)
   {
+    Serial.println("locale out of range");
     return false;
   }
-  
+
+  if (locale > 4)
+  {
+    Serial.println("locale out of range");
+      return false;
+  }
+
   return locale;
 }
 
