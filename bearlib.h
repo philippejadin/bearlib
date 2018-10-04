@@ -15,7 +15,9 @@ Valeurs :
 3 = en
 4 = de
 
-block 5, position 0 =  nourriture
+block 5, position 0  :  nourriture
+block 6 : ressemblances
+block 6, position 10 : stockage ressemblance deja fait ou pas (1 ou 0)
 
 */
 
